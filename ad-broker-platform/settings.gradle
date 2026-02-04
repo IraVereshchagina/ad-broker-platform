@@ -2,3 +2,4 @@ rootProject.name = 'ad-broker-platform'
 
 include 'config-server'
 include 'common-lib'
+include 'ad-manager'
