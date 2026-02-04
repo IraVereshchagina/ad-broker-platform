@@ -31,9 +31,28 @@ class CampaignServiceTest {
         Campaign afterSubmit = campaignRepository.findById(campaign.getId()).get();
         assertThat(afterSubmit.getStatus()).isEqualTo(CampaignStatus.MODERATION);
 
+        afterSubmit.setBudget(java.math.BigDecimal.valueOf(1000));
+        campaignRepository.save(afterSubmit);
+
         campaignService.sendEvent(campaign.getId(), CampaignEvent.APPROVE);
 
         Campaign afterApprove = campaignRepository.findById(campaign.getId()).get();
         assertThat(afterApprove.getStatus()).isEqualTo(CampaignStatus.ACTIVE);
+    }
+
+    @Test
+    @DisplayName("Should NOT activate campaign if budget is ZERO")
+    void shouldBlockActivationWithoutBudget() {
+        Campaign campaign = campaignService.createCampaign("No Money Promo", "http://site.com", "user-1");
+
+        campaignService.sendEvent(campaign.getId(), CampaignEvent.SEND_TO_MODERATION);
+
+        campaignService.sendEvent(campaign.getId(), CampaignEvent.APPROVE);
+
+        Campaign result = campaignRepository.findById(campaign.getId()).get();
+
+        assertThat(result.getStatus())
+                .as("Status should remain MODERATION because budget is 0")
+                .isEqualTo(CampaignStatus.MODERATION);
     }
 }

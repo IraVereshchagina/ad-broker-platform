@@ -4,6 +4,7 @@ import com.adbroker.common.entities.CampaignEvent;
 import com.adbroker.common.entities.CampaignStatus;
 import com.adbroker.manager.entities.Campaign;
 import com.adbroker.manager.repositories.CampaignRepository;
+import com.adbroker.manager.utils.Base62Encoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
@@ -22,15 +23,19 @@ public class CampaignService {
     private final CampaignRepository campaignRepository;
     private final StateMachineFactory<CampaignStatus, CampaignEvent> stateMachineFactory;
     private final CampaignStateChangeInterceptor stateChangeInterceptor;
+    private final Base62Encoder base62Encoder;
 
     @Transactional
     public Campaign createCampaign(String title, String url, String authorId) {
+        String shortCode = base62Encoder.generateRandomShortCode();
+
         Campaign campaign = Campaign.builder()
                 .title(title)
                 .adUrl(url)
                 .authorId(authorId)
                 .status(CampaignStatus.DRAFT)
                 .budget(BigDecimal.ZERO)
+                .shortCode(shortCode)
                 .build();
 
         return campaignRepository.save(campaign);

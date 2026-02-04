@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "campaigns")
@@ -38,6 +40,13 @@ public class Campaign {
     private CampaignStatus status;
 
     private BigDecimal budget;
+
+    @Column(name = "short_code", length = 8, unique = true)
+    private String shortCode;
+
+    @OneToMany(mappedBy = "campaign", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<TargetingRule> targetingRules = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
