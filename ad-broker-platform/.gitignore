@@ -1,5 +1,7 @@
-.gradle
-/build/
+.gradle/
+**/build/
+**/out/
+*.class
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
