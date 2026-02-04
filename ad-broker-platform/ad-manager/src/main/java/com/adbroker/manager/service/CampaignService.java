@@ -3,6 +3,7 @@ package com.adbroker.manager.service;
 import com.adbroker.common.entities.CampaignEvent;
 import com.adbroker.common.entities.CampaignStatus;
 import com.adbroker.manager.entities.Campaign;
+import com.adbroker.manager.entities.TargetingRule;
 import com.adbroker.manager.repositories.CampaignRepository;
 import com.adbroker.manager.utils.Base62Encoder;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,34 @@ public class CampaignService {
                         .setHeader("campaign_id", campaignId)
                         .build()))
                 .subscribe();
+    }
+
+    @Transactional
+    public Campaign updateCampaign(String id, String title, String adUrl, BigDecimal budget) {
+        Campaign campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+
+        if (title != null) campaign.setTitle(title);
+        if (adUrl != null) campaign.setAdUrl(adUrl);
+        if (budget != null) campaign.setBudget(budget);
+
+        return campaignRepository.save(campaign);
+    }
+
+    @Transactional
+    public void addTargetingRule(String campaignId, String attribute, String operator, String value) {
+        Campaign campaign = campaignRepository.findById(campaignId)
+                .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
+
+        TargetingRule rule = TargetingRule.builder()
+                .campaign(campaign)
+                .attribute(attribute)
+                .operator(operator)
+                .ruleValue(value)
+                .build();
+
+        campaign.getTargetingRules().add(rule);
+        campaignRepository.save(campaign);
     }
 
     private StateMachine<CampaignStatus, CampaignEvent> build(Campaign campaign) {

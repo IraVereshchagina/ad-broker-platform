@@ -2,6 +2,8 @@ package com.adbroker.manager.web;
 
 import com.adbroker.common.entities.CampaignEvent;
 import com.adbroker.manager.dto.CreateCampaignRequest;
+import com.adbroker.manager.dto.CreateTargetingRuleRequest;
+import com.adbroker.manager.dto.UpdateCampaignRequest;
 import com.adbroker.manager.entities.Campaign;
 import com.adbroker.manager.repositories.CampaignRepository;
 import com.adbroker.manager.service.CampaignService;
@@ -41,6 +43,27 @@ public class CampaignController {
     @PostMapping("/{id}/send-event")
     public ResponseEntity<Void> sendEvent(@PathVariable String id, @RequestParam CampaignEvent event) {
         campaignService.sendEvent(id, event);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}")
+    public Campaign updateCampaign(@PathVariable String id, @RequestBody UpdateCampaignRequest request) {
+        return campaignService.updateCampaign(
+                id,
+                request.getTitle(),
+                request.getAdUrl(),
+                request.getBudget()
+        );
+    }
+
+    @PostMapping("/{id}/targeting")
+    public ResponseEntity<Void> addTargetingRule(@PathVariable String id, @RequestBody @Valid CreateTargetingRuleRequest request) {
+        campaignService.addTargetingRule(
+                id,
+                request.getAttribute(),
+                request.getOperator(),
+                request.getValue()
+        );
         return ResponseEntity.ok().build();
     }
 }

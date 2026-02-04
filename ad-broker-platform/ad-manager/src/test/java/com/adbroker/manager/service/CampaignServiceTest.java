@@ -31,12 +31,12 @@ class CampaignServiceTest {
         Campaign afterSubmit = campaignRepository.findById(campaign.getId()).get();
         assertThat(afterSubmit.getStatus()).isEqualTo(CampaignStatus.MODERATION);
 
-        afterSubmit.setBudget(java.math.BigDecimal.valueOf(1000));
-        campaignRepository.save(afterSubmit);
+        campaignService.updateCampaign(campaign.getId(), null, null, java.math.BigDecimal.valueOf(1000));
 
         campaignService.sendEvent(campaign.getId(), CampaignEvent.APPROVE);
 
         Campaign afterApprove = campaignRepository.findById(campaign.getId()).get();
+
         assertThat(afterApprove.getStatus()).isEqualTo(CampaignStatus.ACTIVE);
     }
 
