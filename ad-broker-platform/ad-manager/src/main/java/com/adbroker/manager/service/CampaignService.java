@@ -3,6 +3,7 @@ package com.adbroker.manager.service;
 import com.adbroker.common.entities.CampaignEvent;
 import com.adbroker.common.entities.CampaignStatus;
 import com.adbroker.common.events.AdCampaignCreatedEvent;
+import com.adbroker.common.events.AdCampaignUpdatedEvent;
 import com.adbroker.manager.entities.Campaign;
 import com.adbroker.manager.entities.TargetingRule;
 import com.adbroker.manager.kafka.CampaignProducer;
@@ -80,7 +81,18 @@ public class CampaignService {
         if (adUrl != null) campaign.setAdUrl(adUrl);
         if (budget != null) campaign.setBudget(budget);
 
-        return campaignRepository.save(campaign);
+        Campaign saved = campaignRepository.save(campaign);
+
+        AdCampaignUpdatedEvent event = AdCampaignUpdatedEvent.builder()
+                .campaignId(saved.getId())
+                .newStatus(saved.getStatus())
+                .budget(saved.getBudget())
+                .updatedAt(Instant.now())
+                .build();
+
+        campaignProducer.sendCampaignUpdate(event);
+
+        return saved;
     }
 
     @Transactional
