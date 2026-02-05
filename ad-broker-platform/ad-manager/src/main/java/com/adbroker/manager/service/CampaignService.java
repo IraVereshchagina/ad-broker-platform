@@ -50,6 +50,7 @@ public class CampaignService {
                 .campaignId(saved.getId())
                 .authorId(saved.getAuthorId())
                 .adUrl(saved.getAdUrl())
+                .shortCode(saved.getShortCode())
                 .startTime(Instant.ofEpochSecond(Instant.now().getEpochSecond()))
                 .status(saved.getStatus())
                 .build();
@@ -87,6 +88,8 @@ public class CampaignService {
                 .campaignId(saved.getId())
                 .newStatus(saved.getStatus())
                 .budget(saved.getBudget())
+                .adUrl(saved.getAdUrl())
+                .shortCode(saved.getShortCode())
                 .updatedAt(Instant.now())
                 .build();
 

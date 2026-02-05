@@ -49,6 +49,8 @@ public class CampaignStateChangeInterceptor extends StateMachineInterceptorAdapt
                             .campaignId(saved.getId())
                             .newStatus(state.getId())
                             .budget(saved.getBudget())
+                            .adUrl(saved.getAdUrl())
+                            .shortCode(saved.getShortCode())
                             .updatedAt(Instant.now())
                             .build();
 

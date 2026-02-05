@@ -18,4 +18,6 @@ public class AdCampaignUpdatedEvent {
     private CampaignStatus newStatus;
     private BigDecimal budget;
     private Instant updatedAt;
+    private String adUrl;
+    private String shortCode;
 }

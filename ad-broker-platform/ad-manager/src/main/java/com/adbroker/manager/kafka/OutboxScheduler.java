@@ -1,7 +1,10 @@
 package com.adbroker.manager.kafka;
 
+import com.adbroker.common.events.AdCampaignCreatedEvent;
+import com.adbroker.common.events.AdCampaignUpdatedEvent;
 import com.adbroker.manager.entities.OutboxEvent;
 import com.adbroker.manager.repositories.OutboxRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +28,12 @@ public class OutboxScheduler {
 
     private final OutboxRepository outboxRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+
+    private static final Map<String, Class<?>> EVENT_TYPE_MAPPING = Map.of(
+            "CREATED", AdCampaignCreatedEvent.class,
+            "UPDATED", AdCampaignUpdatedEvent.class
+    );
 
     @Scheduled(fixedDelayString = "${app.kafka.outbox-delay}")
     @Transactional
@@ -36,27 +46,33 @@ public class OutboxScheduler {
 
         for (OutboxEvent event : events) {
             try {
+                Class<?> eventClass = EVENT_TYPE_MAPPING.get(event.getEventType());
+
+                if (eventClass == null) {
+                    log.error("Unknown event type: {}", event.getEventType());
+                    continue;
+                }
+
+                Object payloadObject = objectMapper.readValue(event.getPayload(), eventClass);
+
                 ProducerRecord<String, Object> record = new ProducerRecord<>(
                         event.getTopic(),
                         event.getAggregateId(),
-                        event.getPayload()
+                        payloadObject
                 );
 
-                record.headers().add(new RecordHeader("event_type", event.getEventType().getBytes(StandardCharsets.UTF_8)));
+                String className = eventClass.getName();
+                record.headers().add(new RecordHeader("__TypeId__", className.getBytes(StandardCharsets.UTF_8)));
 
                 CompletableFuture<SendResult<String, Object>> future = kafkaTemplate.send(record);
                 SendResult<String, Object> result = future.get(3, TimeUnit.SECONDS);
 
-                log.info("Successfully sent event {} to topic {}, offset {}",
-                        event.getId(), event.getTopic(), result.getRecordMetadata().offset());
-
+                log.info("Successfully sent event {} to topic {}", event.getId(), event.getTopic());
                 outboxRepository.delete(event);
 
             } catch (Exception e) {
                 log.error("Failed to send event {}. Attempt: {}", event.getId(), event.getAttempts(), e);
-
                 event.setAttempts(event.getAttempts() + 1);
-
                 outboxRepository.save(event);
             }
         }

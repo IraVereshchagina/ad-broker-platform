@@ -19,4 +19,5 @@ public class AdCampaignCreatedEvent {
     private String adUrl;
     private Instant startTime;
     private CampaignStatus status;
+    private String shortCode;
 }
