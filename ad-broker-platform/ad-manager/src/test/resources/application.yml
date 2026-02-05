@@ -22,3 +22,14 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+app:
+  kafka:
+    campaign-topic: "test-campaign-events"
+    outbox-delay: 2000

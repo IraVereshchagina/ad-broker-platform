@@ -2,8 +2,10 @@ package com.adbroker.manager.service;
 
 import com.adbroker.common.entities.CampaignEvent;
 import com.adbroker.common.entities.CampaignStatus;
+import com.adbroker.common.events.AdCampaignCreatedEvent;
 import com.adbroker.manager.entities.Campaign;
 import com.adbroker.manager.entities.TargetingRule;
+import com.adbroker.manager.kafka.CampaignProducer;
 import com.adbroker.manager.repositories.CampaignRepository;
 import com.adbroker.manager.utils.Base62Encoder;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ public class CampaignService {
     private final StateMachineFactory<CampaignStatus, CampaignEvent> stateMachineFactory;
     private final CampaignStateChangeInterceptor stateChangeInterceptor;
     private final Base62Encoder base62Encoder;
+    private final CampaignProducer campaignProducer;
 
     @Transactional
     public Campaign createCampaign(String title, String url, String authorId) {
@@ -39,7 +43,19 @@ public class CampaignService {
                 .shortCode(shortCode)
                 .build();
 
-        return campaignRepository.save(campaign);
+        Campaign saved = campaignRepository.save(campaign);
+
+        AdCampaignCreatedEvent event = AdCampaignCreatedEvent.builder()
+                .campaignId(saved.getId())
+                .authorId(saved.getAuthorId())
+                .adUrl(saved.getAdUrl())
+                .startTime(Instant.ofEpochSecond(Instant.now().getEpochSecond()))
+                .status(saved.getStatus())
+                .build();
+
+        campaignProducer.sendCampaignCreated(event);
+
+        return saved;
     }
 
     @Transactional
