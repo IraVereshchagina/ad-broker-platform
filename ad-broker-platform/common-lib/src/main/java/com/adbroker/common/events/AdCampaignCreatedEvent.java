@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.Map;
 
 
 @Data
@@ -20,4 +21,5 @@ public class AdCampaignCreatedEvent {
     private Instant startTime;
     private CampaignStatus status;
     private String shortCode;
+    private Map<String, String> geoTargets;
 }

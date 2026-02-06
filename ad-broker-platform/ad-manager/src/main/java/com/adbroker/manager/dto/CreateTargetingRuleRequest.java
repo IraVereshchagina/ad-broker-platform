@@ -11,4 +11,6 @@ public class CreateTargetingRuleRequest {
     private String operator;
     @NotBlank
     private String value;
+
+    private String specificUrl;
 }

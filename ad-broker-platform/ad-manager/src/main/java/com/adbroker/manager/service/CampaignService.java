@@ -20,6 +20,8 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +55,7 @@ public class CampaignService {
                 .shortCode(saved.getShortCode())
                 .startTime(Instant.ofEpochSecond(Instant.now().getEpochSecond()))
                 .status(saved.getStatus())
+                .geoTargets(extractGeoTargets(saved))
                 .build();
 
         campaignProducer.sendCampaignCreated(event);
@@ -91,6 +94,7 @@ public class CampaignService {
                 .adUrl(saved.getAdUrl())
                 .shortCode(saved.getShortCode())
                 .updatedAt(Instant.now())
+                .geoTargets(extractGeoTargets(saved))
                 .build();
 
         campaignProducer.sendCampaignUpdate(event);
@@ -99,7 +103,7 @@ public class CampaignService {
     }
 
     @Transactional
-    public void addTargetingRule(String campaignId, String attribute, String operator, String value) {
+    public void addTargetingRule(String campaignId, String attribute, String operator, String value, String specificUrl) {
         Campaign campaign = campaignRepository.findById(campaignId)
                 .orElseThrow(() -> new IllegalArgumentException("Campaign not found"));
 
@@ -108,10 +112,23 @@ public class CampaignService {
                 .attribute(attribute)
                 .operator(operator)
                 .ruleValue(value)
+                .specificUrl(specificUrl)
                 .build();
 
         campaign.getTargetingRules().add(rule);
-        campaignRepository.save(campaign);
+        Campaign saved = campaignRepository.save(campaign);
+
+        AdCampaignUpdatedEvent event = AdCampaignUpdatedEvent.builder()
+                .campaignId(saved.getId())
+                .newStatus(saved.getStatus())
+                .budget(saved.getBudget())
+                .adUrl(saved.getAdUrl())
+                .shortCode(saved.getShortCode())
+                .geoTargets(extractGeoTargets(saved))
+                .updatedAt(Instant.now())
+                .build();
+
+        campaignProducer.sendCampaignUpdate(event);
     }
 
     private StateMachine<CampaignStatus, CampaignEvent> build(Campaign campaign) {
@@ -131,5 +148,19 @@ public class CampaignService {
 
         sm.startReactively().block();
         return sm;
+    }
+
+    private Map<String, String> extractGeoTargets(Campaign campaign) {
+        Map<String, String> geoTargets = new HashMap<>();
+        if (campaign.getTargetingRules() != null) {
+            for (TargetingRule rule : campaign.getTargetingRules()) {
+                if ("country".equalsIgnoreCase(rule.getAttribute())
+                        && rule.getSpecificUrl() != null
+                        && !rule.getSpecificUrl().isEmpty()) {
+                    geoTargets.put(rule.getRuleValue(), rule.getSpecificUrl());
+                }
+            }
+        }
+        return geoTargets;
     }
 }

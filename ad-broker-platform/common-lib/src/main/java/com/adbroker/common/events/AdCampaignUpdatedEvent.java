@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Map;
 
 @Data
 @Builder
@@ -20,4 +21,5 @@ public class AdCampaignUpdatedEvent {
     private Instant updatedAt;
     private String adUrl;
     private String shortCode;
+    private Map<String, String> geoTargets;
 }

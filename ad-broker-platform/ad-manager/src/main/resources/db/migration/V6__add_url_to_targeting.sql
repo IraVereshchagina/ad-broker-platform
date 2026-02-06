@@ -1,0 +1,1 @@
+ALTER TABLE targeting_rules ADD COLUMN specific_url VARCHAR(255);

@@ -62,7 +62,8 @@ public class CampaignController {
                 id,
                 request.getAttribute(),
                 request.getOperator(),
-                request.getValue()
+                request.getValue(),
+                request.getSpecificUrl()
         );
         return ResponseEntity.ok().build();
     }

@@ -28,4 +28,6 @@ public class TargetingRule {
 
     @Column(name = "rule_value", nullable = false)
     private String ruleValue;
+
+    private String specificUrl;
 }

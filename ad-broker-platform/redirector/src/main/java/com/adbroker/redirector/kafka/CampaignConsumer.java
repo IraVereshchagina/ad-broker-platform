@@ -27,6 +27,7 @@ public class CampaignConsumer {
                 .shortCode(event.getShortCode())
                 .originalUrl(event.getAdUrl())
                 .status(event.getStatus().name())
+                .geoTargets(event.getGeoTargets())
                 .build();
 
         linkService.saveRoute(route).subscribe();
@@ -41,6 +42,7 @@ public class CampaignConsumer {
                 .shortCode(event.getShortCode())
                 .originalUrl(event.getAdUrl())
                 .status(event.getNewStatus().name())
+                .geoTargets(event.getGeoTargets())
                 .build();
 
         linkService.saveRoute(route).subscribe();
