@@ -1,5 +1,6 @@
 package com.adbroker.redirector.web;
 
+import com.adbroker.redirector.kafka.ClickProducer;
 import com.adbroker.redirector.service.LinkService;
 import com.adbroker.redirector.service.geo.GeoService;
 import com.adbroker.redirector.strategy.CampaignContext;
@@ -26,6 +27,8 @@ public class RedirectController {
     private final StrategyFactory strategyFactory;
     private final GeoService geoService;
 
+    private final ClickProducer clickProducer;
+
     @GetMapping("/{shortCode}")
     public Mono<ResponseEntity<Void>> redirect(@PathVariable String shortCode, ServerWebExchange exchange) {
         String ipAddress = getIpAddress(exchange.getRequest());
@@ -47,6 +50,7 @@ public class RedirectController {
                                         .map(targetUrl -> {
                                             log.info("Redirecting {} -> {} (IP: {}, Country: {})",
                                                     shortCode, targetUrl, ipAddress, country);
+                                            clickProducer.sendClick(context);
                                             return ResponseEntity.status(HttpStatus.FOUND)
                                                     .location(URI.create(targetUrl))
                                                     .<Void>build();
