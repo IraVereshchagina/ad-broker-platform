@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -26,7 +25,7 @@ public class ClickRecord {
     private String ipAddress;
     private String country;
     private String userAgent;
-    private Instant clickedAt;
+    private LocalDateTime clickedAt;
 
     @Builder.Default
     private LocalDateTime processedAt = LocalDateTime.now();

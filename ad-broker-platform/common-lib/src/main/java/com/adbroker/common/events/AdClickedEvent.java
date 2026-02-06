@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 
 @Data
 @Builder
@@ -18,5 +17,5 @@ public class AdClickedEvent {
     private String ipAddress;
     private String country;
     private String userAgent;
-    private Instant clickedAt;
+    private long clickedAt;
 }

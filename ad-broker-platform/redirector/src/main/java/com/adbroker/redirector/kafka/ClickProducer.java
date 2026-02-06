@@ -29,7 +29,7 @@ public class ClickProducer {
                 .ipAddress(context.getIpAddress())
                 .country(context.getCountry())
                 .userAgent(context.getUserAgent())
-                .clickedAt(Instant.ofEpochSecond(Instant.now().toEpochMilli()))
+                .clickedAt(Instant.now().toEpochMilli())
                 .build();
 
         log.debug("Sending click event for {}", event.getShortCode());

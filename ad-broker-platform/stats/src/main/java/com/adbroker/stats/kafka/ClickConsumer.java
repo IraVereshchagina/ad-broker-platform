@@ -9,6 +9,9 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.ZoneId;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -28,7 +31,9 @@ public class ClickConsumer {
                 .ipAddress(event.getIpAddress())
                 .country(event.getCountry())
                 .userAgent(event.getUserAgent())
-                .clickedAt(event.getClickedAt())
+                .clickedAt(Instant.ofEpochMilli(event.getClickedAt())
+                        .atZone(ZoneId.of("UTC"))
+                        .toLocalDateTime())
                 .build();
 
         clickRepository.save(record);
