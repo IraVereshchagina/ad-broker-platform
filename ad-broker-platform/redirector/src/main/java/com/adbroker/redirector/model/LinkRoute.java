@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -14,4 +17,7 @@ public class LinkRoute {
     private String shortCode;
     private String originalUrl;
     private String status;
+
+    @Builder.Default
+    private Map<String, String> geoTargets = new HashMap<>();
 }
